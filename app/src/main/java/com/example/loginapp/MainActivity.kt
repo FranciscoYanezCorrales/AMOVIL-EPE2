@@ -22,8 +22,8 @@ class MainActivity : AppCompatActivity() {
         databaseHelper = DatabaseHelper(this)
 
         // Agregar usuarios predeterminados
-        databaseHelper.addUser("admin", "12345")
-        databaseHelper.addUser("user", "password")
+        //databaseHelper.addUser("admin", "12345")
+        //databaseHelper.addUser("user", "password")
 
         // Referencias a los campos de entrada
         usernameInput = findViewById(R.id.username_input)
@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
             // Verificar las credenciales con la base de datos
             val isValid = databaseHelper.checkUser(username, password)
+
 
             if (isValid) {
                 // Mostrar mensaje de login correcto

@@ -8,17 +8,18 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_NAME = "LoginApp.db"
+        // Referencia a la base de datos llamada "loginapp"
+        private const val DATABASE_NAME = "LoginApp.db" // Nombre de la base de datos
         private const val DATABASE_VERSION = 1
-        private const val TABLE_USERS = "users"
+        private const val TABLE_USERS = "Users" // Nombre de la tabla
+        private const val COLUMN_ID = "id"
         private const val COLUMN_USERNAME = "username"
         private const val COLUMN_PASSWORD = "password"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
-        val createTable = ("CREATE TABLE $TABLE_USERS (" +
-                "$COLUMN_USERNAME TEXT PRIMARY KEY," +
-                "$COLUMN_PASSWORD TEXT)")
+        // Crear la tabla Users con las columnas id, username y password
+        val createTable = "CREATE TABLE $TABLE_USERS ($COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, $COLUMN_USERNAME TEXT, $COLUMN_PASSWORD TEXT)"
         db?.execSQL(createTable)
     }
 
@@ -27,16 +28,49 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         onCreate(db)
     }
 
-    // Método para agregar usuarios a la base de datos
-    fun addUser(username: String, password: String): Boolean {
+    // Create - Agregar un nuevo usuario
+    fun addUser(username: String, password: String): Long {
         val db = this.writableDatabase
-        val contentValues = ContentValues()
-        contentValues.put(COLUMN_USERNAME, username)
-        contentValues.put(COLUMN_PASSWORD, password)
-
-        val result = db.insert(TABLE_USERS, null, contentValues)
+        val values = ContentValues()
+        values.put(COLUMN_USERNAME, username)
+        values.put(COLUMN_PASSWORD, password)
+        val result = db.insert(TABLE_USERS, null, values)
         db.close()
-        return result != -1L
+        return result
+    }
+
+    // Read - Obtener todos los usuarios
+    fun getAllUsers(): List<String> {
+        val db = this.readableDatabase
+        val users = ArrayList<String>()
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS", null)
+        if (cursor.moveToFirst()) {
+            do {
+                users.add(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return users
+    }
+
+    // Update - Actualizar un usuario
+    fun updateUser(oldUsername: String, newUsername: String, newPassword: String): Int {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put(COLUMN_USERNAME, newUsername)
+        values.put(COLUMN_PASSWORD, newPassword)
+        val result = db.update(TABLE_USERS, values, "$COLUMN_USERNAME=?", arrayOf(oldUsername))
+        db.close()
+        return result
+    }
+
+    // Delete - Eliminar un usuario
+    fun deleteUser(username: String): Int {
+        val db = this.writableDatabase
+        val result = db.delete(TABLE_USERS, "$COLUMN_USERNAME=?", arrayOf(username))
+        db.close()
+        return result
     }
 
     // Método para verificar si el usuario existe con la contraseña correcta
